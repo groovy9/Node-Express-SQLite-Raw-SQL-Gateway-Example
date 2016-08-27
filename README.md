@@ -14,7 +14,7 @@ but powerful REST-ish API with only two routes: One for authenticating and one f
    together in a single API call multiple queries that depend on each other
 5. Arrays of queries are wrapped in transactions for data integrity.  If any query in the array fails, nothing is committed.
 6. Provide security with Bcrypt authentication against a passwords database table, then including
-   JWT tokens with subsequent queries
+   JWT tokens (with configurable expiration) with subsequent queries
 7. Enforce per-user per-table read/write permissions by parsing the supplied SQL
 8. By default, limits the number of rows returned by selects to keep performance snappy
 9. Relies on a small number of well-tested NPM packages 
