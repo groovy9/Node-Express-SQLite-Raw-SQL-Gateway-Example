@@ -101,3 +101,14 @@ On any kind of failure, the HTTP return code is set to 4XX and the body of the r
 2. Is not a complete implementation of the SQLite dialect.  Only aware of insert/delete/select/update with no WITH clauses
 3. Slow queries block the thread (because Javascript), so by default, select statements are modified with a configurable 'limit' clause.  
 4. HTTP return codes are simplistic - 200 for ok, 401 for authentication failure, and 400 for any other failure
+
+### Populating the passwords table
+
+By default, a /bcrypt route is enabled that spits out password hashes for supplied passwords:
+
+```
+curl --data '{"password":"foobar"}' -H "content-type:application/json" localhost:3000/bcrypt
+```
+
+Just insert the string that spits out into the 'pass' column of the passwords table and then you can 
+authenticate with the password 'foobar'
