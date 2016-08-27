@@ -7,7 +7,7 @@ but powerful REST-ish API with only two routes: One for authenticating and one f
 
 ### Features
 
-1. No traditional REST API nonsense with slew of GET/PUT/POST/DELETE routes
+1. No traditional REST API nonsense with a slew of GET/PUT/POST/DELETE routes
 2. Simply POST to a single URL with an array of SQL commands in the body in JSON format
 3. Get back a JSON array with the results of each query
 4. SQL queries can reference the lastID of previous queries for chaining
