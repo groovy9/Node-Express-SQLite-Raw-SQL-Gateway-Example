@@ -9,7 +9,7 @@ POSTing SQL queries.
 ### Features
 
 1. No traditional REST API nonsense with slew of GET/PUT/POST/DELETE routes
-2. Simly POST to a single URL with an array of SQL commands in the body in JSON format
+2. Simply POST to a single URL with an array of SQL commands in the body in JSON format
 3. Get back a JSON array with the results of each query
 4. SQL queries can reference the lastID of previous queries for chaining
    together in a single APi call multiple queries that depend on each other
@@ -17,7 +17,8 @@ POSTing SQL queries.
 6. Provide security with Bcrypt authentication against a passwords database table, then including
    JWT tokens with subsequent queries
 7. Enforce per-user per-table read/write permissions by parsing the supplied SQL
-8. Relies on a small number of well-tested NPM packages 
+8. By default, limits the number of rows returned by selects to keep performance snappy
+9. Relies on a small number of well-tested NPM packages 
 
 ### Setup
 
@@ -52,6 +53,7 @@ curl -s localhost:3000/sql -H "content-type:application/json" -H "$auth" --data 
 ```
 sqlite3 test.db 'select * from test'
 ```
+8. Tweak the configurable top section of api.js to taste
 
 
 ### SQL Format
@@ -74,4 +76,26 @@ A single query can dispense with the array:
 ```
 { sql: 'insert into test (stuff) values (?)', args: ['whatever'] }
 ```
+
+### Results Format
+
+The result on success is an array of arrays lined up with the query array
+
+```
+[
+  [{id:1, stuff: "some stuff"}], // first query, select results
+  [{id:1, stuff: "some stuff"},{id:2,stuff:"123"}], // second query
+  [{sql: "insert into test (stuff) values (?)", lastID:7, changes:1}] // non-select results
+] 
+```
+
+### Error format
+
+On any kind of failure, the HTTP return code is set to 4XX and the body of the response is a string with the error message.
+
+### Limitations
+
+1. Does not currently parse subqueries and enforce permissions accordingly. e.g.  `insert into ... select from ...`
+2. Slow queries block the thread, so by default, select statements are modified with a configurable 'limit' clause.  
+3. HTTP return codes are simplistic - 200 for ok, 401 for authentication failure, and 400 for any other failure
 
