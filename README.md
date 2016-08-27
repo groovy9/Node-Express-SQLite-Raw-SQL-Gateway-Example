@@ -40,7 +40,10 @@ create table passwords (user text not null primary key, pass text not null);
 insert into passwords (user, pass) values ('bob', '\$2a\$10\$Inlwwxmlv8MSoUN0k1Z1fOvRpXDi24RrhFP.0CiSNCMIWGgLMn4nu');
 EOF
 ```
-Fire it up: `node api.js`
+Fire it up:
+```
+node api.js
+```
 Authenticate: 
 ```
 auth="Authorization: Bearer `curl -s localhost:3000/auth -H "content-type:application/json" --data '{"user":"bob","pass":"abc123"}' |sed -e 's/\"//g'`"
@@ -53,7 +56,7 @@ Check the results:
 ```
 sqlite3 test.db 'select * from test'
 ```
-Tweak the configurable top section of api.js to taste
+Tweak the configurable top section of api.js to taste and consider running with the something like PM2.
 
 
 ### SQL Format
