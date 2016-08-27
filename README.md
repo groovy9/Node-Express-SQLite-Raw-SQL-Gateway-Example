@@ -55,7 +55,7 @@ Check the results:
 ```
 sqlite3 test.db 'select * from test'
 ```
-Tweak the configurable top section of api.js to taste and consider running with the something like PM2.
+Tweak the configurable top section of api.js to taste and consider running with it something like PM2.
 
 
 ### SQL Format
