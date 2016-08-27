@@ -12,7 +12,7 @@ but powerful REST-ish API with only two routes: One for authenticating and one f
 3. Get back a JSON array with the results of each query
 4. SQL queries can reference the lastID of previous queries for chaining
    together in a single API call multiple queries that depend on each other
-5. Arrays of queries are wrapped in transactions for data integrity
+5. Arrays of queries are wrapped in transactions for data integrity.  If any query in the array fails, nothing is committed.
 6. Provide security with Bcrypt authentication against a passwords database table, then including
    JWT tokens with subsequent queries
 7. Enforce per-user per-table read/write permissions by parsing the supplied SQL
