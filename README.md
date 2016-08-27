@@ -110,5 +110,4 @@ By default, a /bcrypt route is enabled that spits out password hashes for suppli
 curl --data '{"password":"foobar"}' -H "content-type:application/json" localhost:3000/bcrypt
 ```
 
-Just insert the string that spits out into the 'pass' column of the passwords table and then you can 
-authenticate with the password 'foobar'
+Just insert the string that spits out (minutes any enclosing quotes) into the 'pass' column of the passwords table and then you can authenticate with the password 'foobar'
