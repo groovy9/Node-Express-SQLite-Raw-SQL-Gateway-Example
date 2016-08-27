@@ -1,4 +1,4 @@
-# SQLite raw SQL REST API
+# SQLite raw SQL Ajax API
 
 You know how sometimes, you start to write a REST API, but decide you really want to skip the abstraction and just talk SQL via Ajax?  Me too.
 
