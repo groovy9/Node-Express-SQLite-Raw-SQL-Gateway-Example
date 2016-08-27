@@ -11,7 +11,7 @@ but powerful REST-ish API with only two routes: One for authenticating and one f
 2. Simply POST to a single URL with an array of SQL commands in the body in JSON format
 3. Get back a JSON array with the results of each query
 4. SQL queries can reference the lastID of previous queries for chaining
-   together in a single APi call multiple queries that depend on each other
+   together in a single API call multiple queries that depend on each other
 5. Arrays of queries are wrapped in transactions for data integrity
 6. Provide security with Bcrypt authentication against a passwords database table, then including
    JWT tokens with subsequent queries
