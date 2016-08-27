@@ -1,10 +1,9 @@
 # SQLite raw SQL REST API
 
-You know how sometimes, you start to write a REST API, but decide you really want to skip the abstraction and just talk SQL?  Me too.
+You know how sometimes, you start to write a REST API, but decide you really want to skip the abstraction and just talk SQL via Ajax?  Me too.
 
-This repository is just a single JS file that you run with node.js and gives you a simple 
-but powerful REST-ish API with only two routes: One for authenticating and one for
-POSTing SQL queries.
+This repository is just a single JS file that you run with node.js (or PM2 or similar) and gives you a simple 
+but powerful REST-ish API with only two routes: One for authenticating and one for POSTing SQL queries.
 
 ### Features
 
