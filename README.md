@@ -52,3 +52,26 @@ curl -s localhost:3000/sql -H "content-type:application/json" -H "$auth" --data 
 ```
 sqlite3 test.db 'select * from test'
 ```
+
+
+### SQL Format
+
+Queries are passed in JSON format in the body of the POST.  The structure is below, but this would need to be converted to JSON before sending.
+
+```
+[
+  { sql: 'insert into test (stuff) values (?)', args: ['blah blah'] },
+  { sql: 'insert into test (stuff) values (?)', args: ['@lastID'] }, // inserts row id from the insert of 'blah blah' above
+  { sql: 'insert into test (stuff) values (?)', args: ['foo bar baz'] },
+  { sql: 'insert into test (stuff) values (?)', args: [9] },
+  { sql: 'insert into test (stuff) values (?)', args: ['@lastID2'] }, // inserts the row id from the insert of 'foo bar baz'
+  { sql: 'select * from test where stuff = ? or stuff = ?', args: [9, '@lastID2'] }
+]
+```
+
+A single query can dispense with the array:
+
+```
+{ sql: 'insert into test (stuff) values (?)', args: ['whatever'] }
+```
+
