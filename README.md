@@ -99,7 +99,7 @@ On any kind of failure, the HTTP return code is set to 4XX and the body of the r
 
 1. Does not currently parse subqueries and enforce permissions accordingly. e.g.  `insert into ... select from ...`
 2. Is not a complete implementation of the SQLite dialect.  Only aware of insert/delete/select/update with no WITH clauses
-3. Slow queries block the thread (because Javascript), so by default, select statements are modified with a configurable 'limit' clause.  
+3. Slow queries block the thread (because Javascript), so by default, select statements are modified on the fly with a configurable 'limit' clause.  
 4. HTTP return codes are simplistic - 200 for ok, 401 for authentication failure, and 400 for any other failure
 5. SSL is not enabled by default. For production, put it behind a Nginx reverse proxy or refer to the Express docs for enabling SSL and generating certificates.
 
