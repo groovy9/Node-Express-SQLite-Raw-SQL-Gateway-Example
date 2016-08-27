@@ -40,20 +40,20 @@ create table passwords (user text not null primary key, pass text not null);
 insert into passwords (user, pass) values ('bob', '\$2a\$10\$Inlwwxmlv8MSoUN0k1Z1fOvRpXDi24RrhFP.0CiSNCMIWGgLMn4nu');
 EOF
 ```
-4. Fire it up: `node api.js`
-5. Authenticate: 
+Fire it up: `node api.js`
+Authenticate: 
 ```
 auth="Authorization: Bearer `curl -s localhost:3000/auth -H "content-type:application/json" --data '{"user":"bob","pass":"abc123"}' |sed -e 's/\"//g'`"
 ```
-6. Query:
+Query:
 ```
 curl -s localhost:3000/sql -H "content-type:application/json" -H "$auth" --data '[{"sql":"insert into test (stuff) values (?)","args":[2345]},{"sql":"insert into test (stuff) values (?)","args":["@lastID"]}]'
 ````
-7. Check the results:
+Check the results:
 ```
 sqlite3 test.db 'select * from test'
 ```
-8. Tweak the configurable top section of api.js to taste
+Tweak the configurable top section of api.js to taste
 
 
 ### SQL Format
