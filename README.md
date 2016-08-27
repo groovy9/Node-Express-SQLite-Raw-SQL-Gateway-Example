@@ -23,7 +23,7 @@ POSTing SQL queries.
 ### Setup
 
 1. Grab the api.js file
-2. Install some NPM packages: `npm install express bcrypt promise co sqlite3 jwt-simple`
+2. Install some NPM packages: `npm install express bcrypt promise co sqlite3 jwt-simple body-parser`
 3. Create the database (paste this into a terminal)
 ```
 sqlite3 test.db <<EOF
