@@ -102,6 +102,7 @@ On any kind of failure, the HTTP return code is set to 4XX and the body of the r
 3. Slow queries block the thread (because Javascript), so by default, select statements are modified on the fly with a configurable 'limit' clause.  
 4. HTTP return codes are simplistic - 200 for ok, 401 for authentication failure, and 400 for any other failure
 5. SSL is not enabled by default. For production, put it behind a Nginx reverse proxy or refer to the Express docs for enabling SSL and generating certificates.
+6. Initially just parses SQL with some over-simplistic regex.  Todo:  properly parse SQL with https://www.npmjs.com/package/sqlite-parser
 
 ### Populating the passwords table
 
