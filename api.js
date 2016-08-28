@@ -6,6 +6,7 @@ var co = require('co')
 var sqlite3 = require('sqlite3')
 var jwt = require('jwt-simple')
 var fs = require('fs')
+var sqliteParser = require('sqlite-parser')
 
 ///////////////////////////////////////////////////
 //  user configurable section
@@ -117,7 +118,8 @@ if(! disableSQLRoute) {
 }
 
 // include user defined routes under routeDir
-var routePath = require('path').join(__dirname, routeDir)
+var routePath = require('path').join(__dirname, routeDir) /*eslint no-undef: "__dirname"*/
+
 try {
   fs.readdirSync(routePath).forEach(function(file) {
     if(file.match(/^\w/)) {
@@ -125,7 +127,7 @@ try {
     }
   })
 } catch(err) {
-  console.log('routeDir ' + routeDir + ' is not accessible.  Custom routes disabled.', err)
+  console.log('routeDir ' + routeDir + ' is not accessible.  Custom routes disabled.')
 }
 
 // GO!
@@ -167,8 +169,6 @@ function validateJWT(req) {
 
 /////////////////////////////////
 // database stuff
-
-var isSelect = sql =>  typeof sql === 'string' && sql.match(/^\s*select\s+/i)
 
 // Promisified wrapper for sqlite3's all function, 
 function dbAll(sql, args) {
@@ -244,6 +244,11 @@ function query(sql) {
 
       // user can pass in single arg without array, convert to array
       thisArgs = Array.isArray(thisArgs) ? thisArgs : [ thisArgs ]
+
+      // make sure it's an acceptable query type
+      var qType = queryType(thisSQL)
+      if(! (qType === 'select' || qType === 'update' || qType === 'insert' || qType === 'delete'))
+        throw { message: 'Invalid query type: ' + qType } 
       
       // see if this query has been run before and if we're frozen to new queries, error out
       var isKnown = yield db._all('select count(query) as count from ' + knownQueriesTable + ' where query = ? ', [thisSQL])
@@ -255,7 +260,7 @@ function query(sql) {
       }
 
       // selects go through db._all, everything else through db._run
-      if (isSelect(thisSQL)) { 
+      if (qType === 'select') { 
         // run query (limiting number of rows returned), store result
         allQueryResults.push(yield db._all(imposeLimit(thisSQL), thisArgs))
       } else {
@@ -295,35 +300,6 @@ function query(sql) {
   })
 }
 
-// figure out what kind of SQL query we're doing.  Must be one of
-// select, update, delete, insert
-function queryType(SQLObject) {
-  if(! (SQLObject && SQLObject.sql && typeof SQLObject.sql === 'string')) return null
-  var type = SQLObject.sql.match(/^\s*(select|update|delete|insert)\s+/i)
-  return type ? type[1].toLowerCase() : null
-}
-
-// parse SQL for the name of the table it will read/change
-//
-// accepted sql begins with 'insert into table ...', 'update table ...',
-// 'select ... from table' and 'delete from table'.  This is a subset of the full
-// SQLite dialect.  Expand as needed.  Known limitation: doesn't know about or
-// enforce permissions on subqueries like 'insert into ... select from ...'
-// 
-var queryMatches = {
-  update: /^\s*update\s+(\w+)\s+/i,
-  delete: /^\s*delete\s+from\s+(\w+)/i,
-  insert: /^\s*insert\s+into\s+(\w+)\s+/i,
-  select: /^\s*select\s+.+\s+from\s+(\w+)/i
-}
-function tableName(SQLObject) {
-  var type = queryType(SQLObject)
-  if (!type) return null
-  var table = SQLObject.sql.match(queryMatches[type])
-  if (!table) return null
-  return table[1].toLowerCase()
-}
-
 // sanity-check the supplied SQL
 function validateSQL(sql) {
   var SQLArray = arrayify(sql)
@@ -331,11 +307,11 @@ function validateSQL(sql) {
     if (!SQLArray[0].sql) reject({message:'No SQL supplied with query'})
 
     for (var i = 0; i < SQLArray.length; i++) {
-      var type = queryType(SQLArray[i])
-      if (!type) reject({message: 'Invalid SQL: ' + SQLArray[i].sql})
-
-      var table = tableName(SQLArray[i])
-      if (!table) reject({message: 'Invalid SQL: ' + SQLArray[i].sql})
+      var tp = tablePerms(sql[i].sql),
+        count = 0
+      count += tp.read ? tp.length : 0
+      count += tp.write ? tp.write : 0
+      if (count < 1) reject({message: 'Invalid SQL: ' + SQLArray[i].sql})
     }
     resolve(true)
   })
@@ -347,18 +323,25 @@ function sqlCheckPerms(user, sql) {
   var SQLArray = arrayify(sql)
   return co(function*() {
     for (var i = 0; i < SQLArray.length; i++) {
-      var type = queryType(SQLArray[i]),
-        table = tableName(SQLArray[i]),
-        right = type === 'select' ? 'read' : 'write',
-        rightSelect = 'select ' + right + ' from ' + 
-                 permissionsTable + ' where user = ? and tbl = ?' 
-
-      yield query({sql: rightSelect, args: [user, table]})
-        .then(function(res) {
-          if (!(res && res[0] && res[0][0] && res[0][0][right])) {
-            throw { message: 'Permission denied for ' + right + ' on table ' + table }
-          }
-        })
+      var tables = tablePerms(SQLArray[i].sql)
+      for(var j = 0; j < tables.write.length; j++) {
+        var s = 'select write from ' + permissionsTable + ' where user = ? and tbl = ?'
+        yield query({sql: s, args: [user, tables.write[j]]})
+          .then(function(res) {
+            if (!(res && res[0] && res[0][0] && res[0][0].write)) {
+              throw { message: 'Permission denied for writing to table ' + tables.write[j] }
+            }
+          })
+      }
+      for(var k = 0; k < tables.read.length; k++) {
+        var ss = 'select read from ' + permissionsTable + ' where user = ? and tbl = ?'
+        yield query({sql: ss, args: [user, tables.read[k]]})
+          .then(function(res) {
+            if (!(res && res[0] && res[0][0] && res[0][0].read)) {
+              throw { message: 'Permission denied for reading from table ' + tables.read[k] }
+            }
+          })
+      }
     }
   })
 }
@@ -371,7 +354,48 @@ function arrayify(sql) {
   return sql
 }
 
+// parse a single SQL query and return what kind of query it is 
+// (select/insert/update/delete)
+function queryType(sql) {
+  var ast = sqliteParser(sql)
+  if (!(ast && ast.statement)) return null
+  if (ast.statement.length !== 1) return null // only one SQL statement per SQL object
+  return ast.statement[0].variant.toLowerCase()
+}
+
+// parse a single SQL query and return an object containing two arrays,
+// one for the tables that the query will read from and one for the tables
+// the query will write to
+function tablePerms(sql) {
+  var allInto = [],
+    allFrom = []
+
+  function parseFrom(ast) {
+    if (Array.isArray(ast)) ast.map(a => parseFrom(a))
+    else if (typeof ast === 'object') {
+      for (var p in ast) {
+        if (p === 'variant' && ast[p] === 'table') allFrom.push(ast.name)
+        parseFrom(ast[p])
+      }
+    }
+  }
+
+  function parse(ast) {
+    if (Array.isArray(ast)) ast.map(a => parse(a))
+    else if (typeof ast === 'object') {
+      for (var p in ast) {
+        if (p === 'into' && (ast[p].variant === 'table' || ast[p].format === 'table')) allInto.push(ast[p].name) 
+        if (p === 'from') {
+          if (ast.variant === 'delete' && ast[p].variant === 'table') allInto.push(ast[p].name)
+          else parseFrom(ast[p])
+        } else parse(ast[p])
+      }
+    }
+  }
+
+  parse(sqliteParser(sql))
+  return { write: allInto, read: allFrom }
+}
+
 // end database stuff
 /////////////////////////////////
-
-
