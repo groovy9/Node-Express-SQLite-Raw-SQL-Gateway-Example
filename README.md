@@ -95,7 +95,9 @@ On any kind of failure, the HTTP return code is set to 4XX and the body of the r
 
 ### Security
 
-The obvious concern is SQL injection, specifically a malicious user going around your front end and manually running SQL to modify tables he has write access to.  To mitigate this, there's a flag in the config section called freezeQueries that defaults to false.  When false, we store every new query in a known queries table minus placeholder args.  e.g. "select foo from bar where baz = ?".  As most front ends will have a finite number of queries, once you've run through every operation your front end can do, set freezeQueries to true and users will then be unable to run any custom SQL.
+The obvious concern is SQL injection, specifically a malicious user going around your front end and manually running SQL to modify tables he has write access to.  
+
+To mitigate this, there's a flag in the config section called freezeQueries that defaults to false.  When false, we store every new query in a known queries table minus placeholder args.  e.g. "select foo from bar where baz = ?".  As most front ends will have a finite number of queries, once you've run through every operation your front end can do, set freezeQueries to true and users will then be unable to run any custom SQL.
 
 If this isn't enough, the raw SQL route can be disabled in lieu of traditional REST API routes before moving to production. See the next section below.
 
