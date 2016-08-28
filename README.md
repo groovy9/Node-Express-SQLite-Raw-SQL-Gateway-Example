@@ -103,7 +103,7 @@ On any kind of failure, the HTTP return code is set to 4XX and the body of the r
 4. HTTP return codes are simplistic - 200 for ok, 401 for authentication failure, and 400 for any other failure
 5. SSL is not enabled by default. For production, put it behind a Nginx reverse proxy or refer to the Express docs for enabling SSL and generating certificates.
 6. Initially just parses SQL with some over-simplistic regex.  Todo:  properly parse SQL with https://www.npmjs.com/package/sqlite-parser
-7. Once the SQL parsing is tightened up, it's still vulnerable to malicious users going around your front end and doing custom queries on tables they have write permission on.  As such, it's not suitable for applications with public/random uses.
+7. Once the SQL parsing is tightened up, it's still vulnerable to malicious users going around your front end and doing custom queries on tables they have write permission on.  As such, it's not suitable for applications with public/random users.
 
 ### Populating the passwords table
 
