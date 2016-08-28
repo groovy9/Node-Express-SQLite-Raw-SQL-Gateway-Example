@@ -1,19 +1,15 @@
 # SQLite raw SQL Ajax API
 
-You know how sometimes, you start to write a REST API for your database backend, but decide you really want to skip the abstraction hassle and just talk SQL via Ajax?  Me too.
+For small projects, developing a full REST api can be overkill.  This code is intended to accelerate front end development by removing the need to simultaneously develop a back end API while building your front end.  Develop your front end with plain old SQL and when you're ready for production, it's a snap to move your SQL into traditional REST API routes if desired.
 
-This repository is just a single JS file that you run with node.js (or PM2 or similar) and gives you a simple 
-but powerful REST-ish API with only two routes: One for authenticating and one for POSTing SQL queries.
+By default, you get an API with only two routes: One for authenticating and one for POSTing SQL queries.
 
-For the security-conscious thinking "What about SQL injection?"  See the Security section below.  It's not as scary as it looks.
-
-### Use case
-
-This is not suitable for a public API with random/unknown users.  It's intended for internal tools and small teams where building a full REST API is overkill. 
+For the security-conscious thinking "What about SQL injection?" Security can range from bad to excellent depending on how you configure it.  See the security section below.
 
 ### Features
 
-1. No traditional REST API nonsense with a slew of GET/PUT/POST/DELETE routes
+1. By default, no traditional REST API nonsense with a slew of GET/PUT/POST/DELETE routes
+1a. A traditional REST API is easily built (documented below)
 2. Simply POST to a single URL with an array of SQL commands in the body in JSON format
 3. Get back a JSON array with the results of each query
 4. SQL queries can reference the lastID of previous queries for chaining
