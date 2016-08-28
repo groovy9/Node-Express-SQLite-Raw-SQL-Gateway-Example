@@ -5,6 +5,7 @@ var Promise = require('promise')
 var co = require('co')
 var sqlite3 = require('sqlite3')
 var jwt = require('jwt-simple')
+var fs = require('fs')
 
 ///////////////////////////////////////////////////
 //  user configurable section
@@ -24,16 +25,24 @@ var dbFile = 'test.db',
   port = 3000,
   JWTSecret = 'ChangeMeToSomethingLongAndRandom', // used to encrypt/decrypt JWT tokens.
   freezeQueries = false, // disallow any queries that haven't been run before and stored in knownQueriesTable 
-  knownQueriesTable = 'knownqueries'
+  knownQueriesTable = 'knownqueries',
+  routeDir = 'routes', // directory holding JS modules with dedicated API routes
+  disableSQLRoute = false // optionally, disable the raw SQL route in lieu of custom routes
  
-// security alert.  this app is vulnerable to malicious users going around the
-// front end and doing unexpected queries on tables they have write access to.
-// to prevent this, we store every query (minus placeholder args) in knownQueriesTable 
-// until freezeQueries above is set to true, at which point we stop allowing any
-// new queries.  As most front ends will have a finite set of queries, this 
-// effectively locks down the database to "safe" queries.  A user could still
+//
+// security alert. In its default config, this app is vulnerable to malicious users 
+// going around your front end and doing unexpected queries on tables they have write 
+// access to.  To mitigate this, we store every query (minus placeholder args) in 
+// knownQueriesTable until freezeQueries above is set to true, at which point we stop 
+// allowing any new queries.  As most front ends will have a finite set of queries, 
+// this effectively locks down the database to "safe" queries.  A user could still
 // run a safe query with custom args, but this is much less potential damage than
-// running any valid SQL
+// running any valid SQL.  
+//
+// If this is not enough, you can use the raw SQL function only for development,
+// move your SQL into traditional REST api routes as per the docs, and disable
+// the raw SQL route by setting disableSQLRoute above to true.
+//
 
 // limit sql select queries to this many rows.  Long queries cause Express to
 // block, potentially slowing down other users.  Using PM2's cluster feature helps,
@@ -46,6 +55,7 @@ var maxRows = 5000
 // end user-configurable
 ///////////////////////////////////////////////////
 
+  
 //////////////////////////////////////////////////
 // Express configuration, routes
 var app = express()
@@ -91,16 +101,32 @@ app.post(authPath, function(req, res) {
 
 // user passed in some SQL in the post body.  Parse it, check the user's permissions
 // for the requested query, run the query and return the results
-app.post(SQLPath, function(req, res) {
-  var sql = req.body
-
+function safeQuery(req, res, sql) {
   validateSQL(sql)
-  .then(function() { return validateJWT(req) })
-  .then(function(jwt) { return sqlCheckPerms(jwt.user, sql) })
-  .then(function() { return query(sql) }) 
-  .then(function(r) { return HTTPSuccess(res, r) })
-  .catch(function(e) { return HTTPFail(res, e.message) })
-})
+    .then(function() { return validateJWT(req) })
+    .then(function(jwt) { return sqlCheckPerms(jwt.user, sql) })
+    .then(function() { return query(sql) }) 
+    .then(function(r) { return HTTPSuccess(res, r) })
+    .catch(function(e) { return HTTPFail(res, e.message) })
+}
+
+if(! disableSQLRoute) {
+  app.post(SQLPath, function(req, res) {
+    return safeQuery(req, res, req.body)
+  })
+}
+
+// include user defined routes under routeDir
+var routePath = require('path').join(__dirname, routeDir)
+try {
+  fs.readdirSync(routePath).forEach(function(file) {
+    if(file.match(/^\w/)) {
+      require(routePath + '/' + file)(app, safeQuery)
+    }
+  })
+} catch(err) {
+  console.log('routeDir ' + routeDir + ' is not accessible.  Custom routes disabled.', err)
+}
 
 // GO!
 app.listen(port)
@@ -148,7 +174,7 @@ var isSelect = sql =>  typeof sql === 'string' && sql.match(/^\s*select\s+/i)
 function dbAll(sql, args) {
   return new Promise(function(resolve, reject) {
     this.all(sql, args, function(err, res) {
-      if(err) reject(err)
+      if(err) reject(err) 
       else resolve(res)
     })
   }.bind(this))
