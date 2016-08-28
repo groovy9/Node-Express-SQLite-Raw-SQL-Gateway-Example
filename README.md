@@ -109,8 +109,11 @@ You may choose to only use the raw SQL API for rapid development, but need a tra
 
 ```
 module.exports = function(app, safeQuery) {
-  app.get('/widget/:num', function(req, res) {
-    var sql = { sql: 'select * from test where id = ?', args: [req.params.num] } 
+  app.get('/widget/:id', function(req, res) {
+    
+    var sql = { sql: 'select * from widgets where id = ?', args: [req.params.id] } 
+    
+    // safeQuery handles authentication and permissions automagically   
     return safeQuery(req, res, sql)
   })
 }
