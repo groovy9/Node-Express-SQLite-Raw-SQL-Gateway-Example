@@ -27,14 +27,12 @@ but powerful REST-ish API with only two routes: One for authenticating and one f
 ```
 sqlite3 test.db <<EOF
 pragma journal_mode=wal;
-
 create table permissions (user text not null, tbl text not null, read integer not null default 0, write integer not null default 0) ;
 insert into permissions (user, tbl, read, write) values ("bob", "test", 1, 1);
-
 create table test (id integer primary key autoincrement, stuff text) ;
 insert into test (stuff) values ("some stuff");
 insert into test (stuff) values (123);
-
+create table knownqueries (query text primary key);
 create table passwords (user text not null primary key, pass text not null);
 insert into passwords (user, pass) values ('bob', '\$2a\$10\$Inlwwxmlv8MSoUN0k1Z1fOvRpXDi24RrhFP.0CiSNCMIWGgLMn4nu');
 EOF
@@ -95,6 +93,14 @@ The result on success is an array of arrays lined up with the query array
 
 On any kind of failure, the HTTP return code is set to 4XX and the body of the response is a string with the error message.
 
+### Security
+
+The obvious concern is SQL injection, specifically a malicious user going around your front end and manually running SQL to modify tables he has write access to.  To mitigate this, there's a flag in the config section called freezeQueries that defaults to false.  When false, we store every new query in a known queries table minus placeholder args.  e.g. "select foo from bar where baz = ?".  As most front ends will have a finite number of queries, once you've run through every operation your front end can do, set freezeQueries to true and users will then be unable to run any custom SQL.
+
+As authentication uses JWT and doesn't store it in cookies, Cross-site request forgery (CSRF) is not a concern.
+
+Traditional SQL injection, in which a form field is blindly passed into the middle of an SQL query, is not an issue as the entirety of every query is parsed and validated before executing.
+
 ### Limitations
 
 1. Does not currently parse subqueries and enforce permissions accordingly. e.g.  `insert into ... select from ...`
@@ -103,7 +109,6 @@ On any kind of failure, the HTTP return code is set to 4XX and the body of the r
 4. HTTP return codes are simplistic - 200 for ok, 401 for authentication failure, and 400 for any other failure
 5. SSL is not enabled by default. For production, put it behind a Nginx reverse proxy or refer to the Express docs for enabling SSL and generating certificates.
 6. Initially just parses SQL with some over-simplistic regex.  Todo:  properly parse SQL with https://www.npmjs.com/package/sqlite-parser
-7. Although traditional SQL injection isn't an issue, it's still vulnerable to malicious users going around your front end and doing custom queries on tables they have write permission on.  As such, it's not suitable for applications with public/random users.
 
 ### Populating the passwords table
 
