@@ -5,6 +5,8 @@ You know how sometimes, you start to write a REST API, but decide you really wan
 This repository is just a single JS file that you run with node.js (or PM2 or similar) and gives you a simple 
 but powerful REST-ish API with only two routes: One for authenticating and one for POSTing SQL queries.
 
+For the security-conscious thinking "What about SQL injection?"  See the Security section below.  It's not as scary as it looks.
+
 ### Features
 
 1. No traditional REST API nonsense with a slew of GET/PUT/POST/DELETE routes
