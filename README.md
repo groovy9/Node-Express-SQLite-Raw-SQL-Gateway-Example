@@ -7,6 +7,10 @@ but powerful REST-ish API with only two routes: One for authenticating and one f
 
 For the security-conscious thinking "What about SQL injection?"  See the Security section below.  It's not as scary as it looks.
 
+### Use case
+
+This is not suitable for a public API with random/unknown users.  It's intended for internal tools and small teams where building a full REST API is overkill. 
+
 ### Features
 
 1. No traditional REST API nonsense with a slew of GET/PUT/POST/DELETE routes
@@ -20,10 +24,6 @@ For the security-conscious thinking "What about SQL injection?"  See the Securit
 7. Enforce per-user per-table read/write permissions by parsing the supplied SQL
 8. By default, limits the number of rows returned by selects to keep performance snappy
 9. Relies on a small number of well-tested NPM packages 
-
-### Use case
-
-This is not suitable for a public API with random/unknown users.  It's intended for internal tools and small teams where building a full REST API is overkill. 
 
 ### Setup
 
