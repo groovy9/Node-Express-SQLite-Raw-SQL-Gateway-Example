@@ -114,7 +114,7 @@ module.exports = function(app, safeQuery) {
     
     var sql = { sql: 'select * from widgets where id = ?', args: [req.params.id] } 
     
-    // safeQuery handles authentication and permissions automagically   
+    // safeQuery enforces authentication and permissions automagically   
     return safeQuery(req, res, sql)
   })
 }
