@@ -8,16 +8,13 @@ For the security-conscious thinking "What about SQL injection?" Security can ran
 
 ### Features
 
-1. By default, no traditional REST API nonsense with a slew of GET/PUT/POST/DELETE routes, though one is easily built (documented below)
-2. Simply POST to a single URL with an array of SQL commands in the body in JSON format
-3. Get back a JSON array with the results of each query
-4. SQL queries can reference the lastID of previous queries for chaining
+1. Simply POST to a single URL with an array of SQL commands in the body in JSON format and get back an array of results
+2. SQL queries can reference the lastID of previous queries for chaining
    together in a single API call multiple queries that depend on each other
-5. Arrays of queries are wrapped in transactions for data integrity.  If any query in the array fails, nothing is committed.
-6. Provide security with Bcrypt authentication against a passwords database table, then including
-   JWT tokens (with configurable expiration) with subsequent queries
-7. Enforce per-user per-table read/write permissions by parsing the supplied SQL
-8. By default, limits the number of rows returned by selects to keep performance snappy
+3. Arrays of queries are wrapped in transactions for data integrity.  If any query in the array fails, nothing is committed.
+4. Security via bcrypt password authentication, JWT tokens, complete SQL parsing
+5. Enforce per-user per-table read/write permissions by parsing the supplied SQL including joins, subqueries
+6. By default, limits the number of rows returned by selects to keep performance snappy
 
 ### Setup
 
