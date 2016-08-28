@@ -22,7 +22,18 @@ var dbFile = 'test.db',
   authPath = '/auth',
   SQLPath = '/sql',
   port = 3000,
-  JWTSecret = 'ChangeMeToSomethingLongAndRandom' // used to encrypt/decrypt JWT tokens.
+  JWTSecret = 'ChangeMeToSomethingLongAndRandom', // used to encrypt/decrypt JWT tokens.
+  freezeQueries = false, // disallow any queries that haven't been run before and stored in knownQueriesTable 
+  knownQueriesTable = 'knownqueries'
+ 
+// security alert.  this app is vulnerable to malicious users going around the
+// front end and doing unexpected queries on tables they have write access to.
+// to prevent this, we store every query (minus placeholder args) in knownQueriesTable 
+// until freezeQueries above is set to true, at which point we stop allowing any
+// new queries.  As most front ends will have a finite set of queries, this 
+// effectively locks down the database to "safe" queries.  A user could still
+// run a safe query with custom args, but this is much less potential damage than
+// running any valid SQL
 
 // limit sql select queries to this many rows.  Long queries cause Express to
 // block, potentially slowing down other users.  Using PM2's cluster feature helps,
@@ -207,12 +218,21 @@ function query(sql) {
 
       // user can pass in single arg without array, convert to array
       thisArgs = Array.isArray(thisArgs) ? thisArgs : [ thisArgs ]
+      
+      // see if this query has been run before and if we're frozen to new queries, error out
+      var isKnown = yield db._all('select count(query) as count from ' + knownQueriesTable + ' where query = ? ', [thisSQL])
+        .then(c => c[0].count == 1 )
+
+      if(! isKnown) {
+        if(freezeQueries) throw { message: 'Custom SQL queries are disabled: ' + thisSQL }
+        else yield db._run('insert or ignore into knownqueries (query) values (?)', [thisSQL])
+      }
 
       // selects go through db._all, everything else through db._run
-      if (isSelect(thisSQL))  
+      if (isSelect(thisSQL)) { 
         // run query (limiting number of rows returned), store result
         allQueryResults.push(yield db._all(imposeLimit(thisSQL), thisArgs))
-      else {
+      } else {
         // queries can have a '@lastID<num>' argument (case-insensitive), which gets
         // replaced with the lastID of the <num>th query.  Leaving off <num> means query 0
         // e.g. @lastID and @lastID0 mean the first, @lastID22 is 23rd, etc.
