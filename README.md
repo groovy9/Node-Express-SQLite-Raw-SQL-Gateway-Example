@@ -108,6 +108,7 @@ As authentication uses JWT and doesn't store it in cookies, Cross-site request f
 You may choose to only use the raw SQL API for rapid development, but need a traditional API for production.  This is easily accomplished by adding route modules to the 'routes' subdirectory with the following format.  When present, they'll be automatically included by api.js.
 
 ```
+// routes/widget.js
 module.exports = function(app, safeQuery) {
   app.get('/widget/:id', function(req, res) {
     
