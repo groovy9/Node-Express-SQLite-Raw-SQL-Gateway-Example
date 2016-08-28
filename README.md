@@ -18,12 +18,11 @@ For the security-conscious thinking "What about SQL injection?" Security can ran
    JWT tokens (with configurable expiration) with subsequent queries
 7. Enforce per-user per-table read/write permissions by parsing the supplied SQL
 8. By default, limits the number of rows returned by selects to keep performance snappy
-9. Relies on a small number of well-tested NPM packages 
 
 ### Setup
 
 1. Grab the api.js file
-2. Install some NPM packages: `npm install express bcrypt promise co sqlite3 jwt-simple body-parser`
+2. Install some NPM packages: `npm install express bcrypt promise co sqlite3 jwt-simple body-parser sqlite-parser`
 3. Create the database (paste this into a terminal)
 ```
 sqlite3 test.db <<EOF
