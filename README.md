@@ -97,9 +97,24 @@ On any kind of failure, the HTTP return code is set to 4XX and the body of the r
 
 The obvious concern is SQL injection, specifically a malicious user going around your front end and manually running SQL to modify tables he has write access to.  To mitigate this, there's a flag in the config section called freezeQueries that defaults to false.  When false, we store every new query in a known queries table minus placeholder args.  e.g. "select foo from bar where baz = ?".  As most front ends will have a finite number of queries, once you've run through every operation your front end can do, set freezeQueries to true and users will then be unable to run any custom SQL.
 
+If this isn't enough, the raw SQL route can be disabled in lieu of traditional REST API routes before moving to production. See the next section below.
+
 As authentication uses JWT and doesn't store it in cookies, Cross-site request forgery (CSRF) is not a concern.
 
-Traditional SQL injection, in which a form field is blindly passed into the middle of an SQL query, is not an issue as the entirety of every query is parsed and validated before executing.
+### Traditional REST API for production
+
+You may choose to only use the raw SQL API for rapid development, but need a traditional API for production.  This is easily accomplished by adding route modules to the 'routes' subdirectory with the following format.  When present, they'll be automatically included by api.js.
+
+```
+module.exports = function(app, safeQuery) {
+  app.get('/widget/:num', function(req, res) {
+    var sql = { sql: 'select * from test where id = ?', args: [req.params.num] } 
+    return safeQuery(req, res, sql)
+  })
+}
+```
+
+See the Express documentation for creating routes.  safeQuery() takes your SQL object, ensures you're authenticated via JWT, parses your SQL, ensures you have permission to read or write the requested tables, runs the query and returns the results or the error.
 
 ### Limitations
 
