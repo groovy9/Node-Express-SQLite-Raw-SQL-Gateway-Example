@@ -4,7 +4,7 @@ For small projects, developing a full REST API can be overkill.  This code is in
 
 By default, you get an API with only two routes: One for authenticating and one for POSTing SQL queries.
 
-For the security-conscious thinking "What about SQL injection?" Security can range from bad to excellent depending on how you configure it.  See the security section below.
+For the security-conscious thinking "What about SQL injection?" Security can range from poor to excellent depending on how you configure it.  See the security section below.
 
 ### Features
 
