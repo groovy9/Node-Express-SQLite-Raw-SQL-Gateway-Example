@@ -8,8 +8,7 @@ For the security-conscious thinking "What about SQL injection?" Security can ran
 
 ### Features
 
-1. By default, no traditional REST API nonsense with a slew of GET/PUT/POST/DELETE routes
-1. A traditional REST API is easily built (documented below)
+1. By default, no traditional REST API nonsense with a slew of GET/PUT/POST/DELETE routes, though one is easily built (documented below)
 2. Simply POST to a single URL with an array of SQL commands in the body in JSON format
 3. Get back a JSON array with the results of each query
 4. SQL queries can reference the lastID of previous queries for chaining
