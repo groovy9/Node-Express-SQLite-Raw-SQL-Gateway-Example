@@ -21,6 +21,10 @@ For the security-conscious thinking "What about SQL injection?"  See the Securit
 8. By default, limits the number of rows returned by selects to keep performance snappy
 9. Relies on a small number of well-tested NPM packages 
 
+### Use case
+
+This is not suitable for a public API with random/unknown users.  It's intended for internal tools and small teams where building a full REST API is overkill. 
+
 ### Setup
 
 1. Grab the api.js file
