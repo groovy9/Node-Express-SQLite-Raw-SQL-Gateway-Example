@@ -1,6 +1,6 @@
 # SQLite raw SQL Ajax API
 
-For small projects, developing a full REST api can be overkill.  This code is intended to accelerate front end development by removing the need to simultaneously develop a back end API while building your front end.  Develop your front end with plain old SQL and when you're ready for production, it's a snap to move your SQL into traditional REST API routes if desired.
+For small projects, developing a full REST API can be overkill.  This code is intended to accelerate front end development by removing the need to simultaneously develop a back end API while building your front end.  Develop your front end with plain old SQL and when you're ready for production, it's a snap to move your SQL into traditional REST API routes if desired.
 
 By default, you get an API with only two routes: One for authenticating and one for POSTing SQL queries.
 
