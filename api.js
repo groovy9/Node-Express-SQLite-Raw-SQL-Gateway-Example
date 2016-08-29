@@ -232,9 +232,12 @@ function imposeLimit(SQLString) {
 function query(sql) {
   var db // set in co main function, needed in catch() to roll back transaction
   var SQLArray = arrayify(sql) // user can pass in array, single object or string
+  var needsWrt = needsWrite(sql)
   return co(function*() {
     db = new _sqlite(dbFile)
-    yield db._run('begin') // wrap all operations in a transaction
+    if(needsWrt) 
+      yield db._run('begin') // wrap everything in a transaction if any writes
+     
     var allQueryResults = []
     var lastIDs = []
 
@@ -287,15 +290,16 @@ function query(sql) {
     }
 
     // finish up transaction
-    yield db._run('end')
+    if(needsWrt) yield db._run('end')
+
     db.close()
     return allQueryResults
   })
   .catch(function(error) { // anything fails, roll back the transaction and close the db handle
-    db._run('rollback')
-      .then(()  => db.close())
-      .catch((err) => { db.close(); console.log('Rollback error ?? ', err) })
-
+    if(needsWrt) 
+      db._run('rollback').catch((err) => { console.log('Rollback error ?? ', err) })
+     
+    db.close()
     throw error
   })
 }
@@ -395,6 +399,18 @@ function tablePerms(sql) {
 
   parse(sqliteParser(sql))
   return { write: allInto, read: allFrom }
+}
+
+// see if anything in the SQL array requires a write
+function needsWrite(SQLObject) {
+  var sqlObj = SQLObject
+  if(!Array.isArray(sqlObj)) sqlObj = [ sqlObj ]
+
+  for(var i = 0; i < sqlObj.length; i++) {
+    var perms = tablePerms(sqlObj[i].sql)
+    if(perms && perms.write && perms.write.length > 0) return true
+  }
+  return false
 }
 
 // end database stuff
