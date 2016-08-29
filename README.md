@@ -41,22 +41,26 @@ node api.js
 In another terminal, create a JSON content type header to pass to Curl:
 ```
 json="content-type:application/json" 
+
 ```
 Authenticate and store token in a variable:
 ```
 auth="Authorization: Bearer `curl -s localhost:3000/auth -H "$json" --data '{"user":"bob","pass":"abc123"}' |sed -e 's/\"//g'`"
+
 ````
 Create some SQL in JSON format:
 ```
 twoinserts='[{"sql":"insert into test (stuff) values (?)","args":[2345]},{"sql":"insert into test (stuff) values (?)","args":["@lastID"]}]'
 select='[{"sql":"select * from test"}]'
 permissiondenied='[{"sql":"select * from test join passwords"}]'
+
 ```
 Query:
 ```
 echo -e "\n" `curl -s localhost:3000/sql -H "$json" -H "$auth" --data "$twoinserts"` "\n\n"
 echo -e "\n" `curl -s localhost:3000/sql -H "$json" -H "$auth" --data "$select"` "\n\n"
 echo -e "\n" `curl -s localhost:3000/sql -H "$json" -H "$auth" --data "$permissiondenied"` "\n\n"
+
 ````
 Tweak the configurable top section of api.js to taste and consider running with it something like PM2.
 
