@@ -112,14 +112,8 @@ function safeQuery(req, res, sql) {
     .catch(function(e) { return HTTPFail(res, e.message) })
 }
 
-if(! disableSQLRoute) {
-  //app.post(SQLPath, function(req, res) {
-    //return safeQuery(req, res, req.body)
-  //})
-  
+if(! disableSQLRoute) 
   app.post(SQLPath, (req, res) => safeQuery(req, res, req.body))
-
-}
 
 // include user defined routes under routeDir
 var routePath = require('path').join(__dirname, routeDir) /*eslint no-undef: "__dirname"*/
