@@ -23,7 +23,7 @@ var dbFile = 'test.db',
   bcryptPath = '/bcrypt',
   authPath = '/auth',
   SQLPath = '/sql',
-  port = 3000,
+  port = 3001,
   JWTSecret = 'ChangeMeToSomethingLongAndRandom', // used to encrypt/decrypt JWT tokens.
   freezeQueries = false, // disallow any queries that haven't been run before and stored in knownQueriesTable 
   knownQueriesTable = 'knownqueries',
@@ -140,7 +140,12 @@ function HTTPFail(res, msg, type) {
 }
 
 // dinner is served
-function HTTPSuccess(res, data) { res.status(200).json(data) }
+function HTTPSuccess(res, data) { 
+  res.append('Cache-Control', 'no-cache, no-store, must-revalidate')
+  res.append('Pragma', 'no-cache')
+  res.append('Expires', '0')
+  res.status(200).json(data) 
+}
 
 // check the authorization header, validate and return decoded JWT token
 function validateJWT(req) {
