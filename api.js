@@ -120,7 +120,7 @@ var routePath = require('path').join(__dirname, routeDir) /*eslint no-undef: "__
 
 try {
   fs.readdirSync(routePath).forEach(function(file) {
-    if(file.match(/^\w/)) require(routePath + '/' + file)(app, safeQuery)
+    if(file.match(/^\w/)) require(routePath + '/' + file)(app, safeQuery, validateJWT, HTTPSuccess, HTTPFail)
   })
 } catch(err) {
   console.log('routeDir ' + routeDir + ' is not accessible.  Custom routes disabled.')
