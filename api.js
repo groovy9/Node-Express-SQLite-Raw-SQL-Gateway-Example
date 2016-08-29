@@ -112,9 +112,12 @@ function safeQuery(req, res, sql) {
 }
 
 if(! disableSQLRoute) {
-  app.post(SQLPath, function(req, res) {
-    return safeQuery(req, res, req.body)
-  })
+  //app.post(SQLPath, function(req, res) {
+    //return safeQuery(req, res, req.body)
+  //})
+  
+  app.post(SQLPath, (req, res) => safeQuery(req, res, req.body))
+
 }
 
 // include user defined routes under routeDir
@@ -129,9 +132,6 @@ try {
 } catch(err) {
   console.log('routeDir ' + routeDir + ' is not accessible.  Custom routes disabled.')
 }
-
-// GO!
-app.listen(port)
 
 // end express config
 ////////////////////////////////////////////////
@@ -201,7 +201,6 @@ class _sqlite extends sqlite3.Database {
   }
 }
 
-var db = new _sqlite(dbFile)
 
 // see if sql includes a limit clause, make sure it's less than maxRows.
 // if not, add one but preserve any 'offset' clause after the limit
@@ -414,3 +413,15 @@ function needsWrite(SQLObject) {
 
 // end database stuff
 /////////////////////////////////
+
+var db = new _sqlite(dbFile)
+db._all('select * from ' + passwordsTable)
+  .then(function() { db._all('select * from ' + permissionsTable) })
+  .catch(function() {
+    console.log('Database file ' + dbFile + ' is missing, corrupt or does not contain required tables.')
+    process.exit()
+  })
+
+// GO!
+app.listen(port)
+
