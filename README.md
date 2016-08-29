@@ -38,7 +38,7 @@ Fire it up:
 ```
 node api.js
 ```
-Create a JSON content type header to pass to Curl:
+In another terminal, create a JSON content type header to pass to Curl:
 ```
 json="content-type:application/json" 
 ```
