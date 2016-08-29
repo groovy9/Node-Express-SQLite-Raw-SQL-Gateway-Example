@@ -136,6 +136,7 @@ app.listen(port)
 // end express config
 ////////////////////////////////////////////////
 
+
 // time in seconds since 1970 for generating/enforcing JWT expiration
 function epochSeconds() {  return new Date().getTime() / 1000 }
 
@@ -200,6 +201,8 @@ class _sqlite extends sqlite3.Database {
   }
 }
 
+var db = new _sqlite(dbFile)
+
 // see if sql includes a limit clause, make sure it's less than maxRows.
 // if not, add one but preserve any 'offset' clause after the limit
 function imposeLimit(SQLString) {
@@ -230,11 +233,9 @@ function imposeLimit(SQLString) {
 //  for a single arg, optionally skip the array: arg: 'foo' / arg: ['foo']
 //   
 function query(sql) {
-  var db // set in co main function, needed in catch() to roll back transaction
   var SQLArray = arrayify(sql) // user can pass in array, single object or string
   var needsWrt = needsWrite(sql)
   return co(function*() {
-    db = new _sqlite(dbFile)
     if(needsWrt) 
       yield db._run('begin') // wrap everything in a transaction if any writes
      
@@ -292,14 +293,12 @@ function query(sql) {
     // finish up transaction
     if(needsWrt) yield db._run('end')
 
-    db.close()
     return allQueryResults
   })
   .catch(function(error) { // anything fails, roll back the transaction and close the db handle
     if(needsWrt) 
       db._run('rollback').catch((err) => { console.log('Rollback error ?? ', err) })
      
-    db.close()
     throw error
   })
 }
