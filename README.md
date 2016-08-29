@@ -23,7 +23,7 @@ For the security-conscious thinking "What about SQL injection?" Security can ran
 ```
 npm install express bcrypt promise co sqlite3 jwt-simple body-parser sqlite-parser
 ```
-3. Create the database (paste this into a terminal)
+Create the database (paste this into a terminal)
 ```
 sqlite3 test.db <<EOF
 pragma journal_mode=wal;
