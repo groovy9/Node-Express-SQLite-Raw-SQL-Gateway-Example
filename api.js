@@ -61,7 +61,6 @@ var maxRows = 5000
 // Express configuration, routes
 var app = express()
 app.use(require('body-parser').json()) // auto-parse post bodies in JSON format
-app.use(express.static('public')) // serve up static files in the public directory
 
 // helper route for generating some password hashes to stick in the passwords
 // table for testing
