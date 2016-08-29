@@ -23,8 +23,8 @@ For the security-conscious thinking "What about SQL injection?" Security can ran
 3. Create the database (paste this into a terminal)
 ```
 sqlite3 test.db <<EOF
-pragma page_size=4096
-pragma journal_mode=wal
+pragma page_size=4096;
+pragma journal_mode=wal;
 create table permissions (user text not null, tbl text not null, read integer not null default 0, write integer not null default 0) ;
 insert into permissions (user, tbl, read, write) values ("bob", "test", 1, 1);
 create table test (id integer primary key autoincrement, stuff text) ;
