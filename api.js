@@ -86,7 +86,7 @@ app.post(authPath, function(req, res) {
 
   query({sql: 'select pass from ' + passwordsTable + ' where user = ?', args: [req.body.user]})
     .then(function(dbres) {
-      if (!dbres) return HTTPFail(res, 'Wrong username/password.', 'auth')
+      if (! (dbres && dbres[0] && dbres[0][0])) return HTTPFail(res, 'Wrong username/password.', 'auth')
       var p = dbres[0][0].pass
       if (bcrypt.compareSync(req.body.pass, p)) { // check password
         var expires = epochSeconds() + JWTDuration * 60
@@ -103,6 +103,7 @@ app.post(authPath, function(req, res) {
 // user passed in some SQL in the post body.  Parse it, check the user's permissions
 // for the requested query, run the query and return the results
 function safeQuery(req, res, sql) {
+  if(! Array.isArray(sql)) sql = [ sql ]
   validateSQL(sql)
     .then(function() { return validateJWT(req) })
     .then(function(jwt) { return sqlCheckPerms(jwt.user, sql) })
